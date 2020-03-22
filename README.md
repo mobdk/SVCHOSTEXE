@@ -2,6 +2,8 @@
 Execute shellcode with svchost.exe -k LocalSystemNetworkResticted
 compile: C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /platform:x64 /target:exe /unsafe svcexec.cs
 
+PoC vid: https://www.youtube.com/watch?v=UpOskWR8n20&feature=youtu.be
+
 svcexec.cs:
 
 ```
